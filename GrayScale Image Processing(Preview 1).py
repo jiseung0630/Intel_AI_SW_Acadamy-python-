@@ -26,7 +26,7 @@ def maskcircleImage():
     rfp = open(fullname1, 'rb')
     for i in range(maskcircleH):
         for k in range(maskcircleW):
-            mask[i][k] = ord(rfp.read(1))
+            maskcircle[i][k] = ord(rfp.read(1))
     rfp.close()
 
 def openImage():
@@ -884,7 +884,7 @@ mainMenu.add_cascade(label='파일', menu=fileMenu)
 fileMenu.add_command(label='열기', command=openImage)
 fileMenu.add_command(label='저장', command=saveImage)
 fileMenu.add_separator()
-fileMenu.add_command(label='종료',command=None)
+fileMenu.add_command(label='종료',command=exit)
 
 pixelMenu = Menu(mainMenu, tearoff=0)  # 상위 메뉴 (화소점 처리)
 mainMenu.add_cascade(label='화소점 처리', menu=pixelMenu)

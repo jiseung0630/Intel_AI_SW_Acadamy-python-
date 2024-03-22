@@ -544,6 +544,324 @@ def edgeHor():
 
     displayImage()
 
+def simImage():
+    global inImage, outImage, inH, inW, outH, outW
+    ##(중요!)출력이미지의크기를 결정 - --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    ##메모리 할당
+    outImage = malloc2D(outH, outW)
+
+    #############
+    ##화소영역처리
+    #############
+
+    ##임시 메모리할당(실수형)
+    tmpInImage = malloc2D(inH + 2, inW + 2, 127)
+    tmpOutImage = malloc2D(outH, outW)
+
+    ##입력 이미지 --> 임시 입력 이미지
+    for i in range(inH):
+        for k in range(inW):
+            tmpInImage[i + 1][k + 1] = inImage[i][k]
+
+    ####회선 연산#####
+    for i in range(inH):
+        for k in range(inW):  ##마스크(3x3) 와 한점을 중심으로한 3x3을 곱하기
+            max = 0.0
+
+            for m in range (3):
+                for n in range(3):
+                    if(abs(tmpInImage[i+1][k+1] - tmpInImage[i+m][k+n]) >= max):
+                        max = abs(tmpInImage[i+1][k+1] - tmpInImage[i+m][k+n])
+            tmpOutImage[i][k] = max
+
+    ##임시출력영상 --> 출력영상.
+    for i in range(outH):
+        for k in range(outW):
+            if (tmpOutImage[i][k] < 0.0):
+                outImage[i][k] = 0
+            elif (tmpOutImage[i][k] > 255.0):
+                outImage[i][k] = 255
+            else:
+                outImage[i][k] = int(tmpOutImage[i][k])
+
+    displayImage()
+
+def minusImage():
+    global inImage, outImage, inH, inW, outH, outW
+    ##(중요!)출력이미지의크기를 결정 - --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    ##메모리 할당
+    outImage = malloc2D(outH, outW)
+
+    #############
+    ##화소영역처리
+    #############
+
+    ##임시 메모리할당(실수형)
+    tmpInImage = malloc2D(inH + 2, inW + 2, 127)
+    tmpOutImage = malloc2D(outH, outW)
+
+    ##입력 이미지 --> 임시 입력 이미지
+    for i in range(inH):
+        for k in range(inW):
+            tmpInImage[i + 1][k + 1] = inImage[i][k]
+
+    ####회선 연산#####
+    mask4 = [0 for _ in range(4)]
+    for i in range(inH):
+        for k in range(inW):  ##마스크(3x3) 와 한점을 중심으로한 3x3을 곱하기
+            max = 0.0
+
+            mask4[0]=abs(tmpInImage[i][k] - tmpInImage[i + 2][k + 2])
+            mask4[1]=abs(tmpInImage[i][k + 1] - tmpInImage[i + 2][k + 1])
+            mask4[2]=abs(tmpInImage[i][k + 2] - tmpInImage[i + 2][k])
+            mask4[3]=abs(tmpInImage[i + 1][k] - tmpInImage[i + 1][k + 2])
+            for i in range(4):
+                if (mask4[i] >= max):
+                    max = mask4[i]
+            tmpOutImage[i][k] = max
+
+    ##임시출력영상 --> 출력영상.
+    for i in range(outH):
+        for k in range(outW):
+            if (tmpOutImage[i][k] < 0.0):
+                outImage[i][k] = 0
+            elif (tmpOutImage[i][k] > 255.0):
+                outImage[i][k] = 255
+            else:
+                outImage[i][k] = int(tmpOutImage[i][k])
+
+    displayImage()
+
+def zoomOut():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    scale = askinteger('배율입력', '0 < 입력', minvalue=0)
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = int(inH/scale)
+    outW = int(inW/scale)
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(inH):
+        for k in range(inW):
+            outImage[int(i/scale)][int(k/scale)] = inImage[i][k]
+    ##########################
+    displayImage()
+
+def zoomIn():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    scale = askinteger('배율입력', '0 < 입력', minvalue=0)
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = int(inH * scale)
+    outW = int(inW * scale)
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(outH):
+        for k in range(outW):
+            outImage[int(i)][int(k)] = inImage[int(i/scale)][int(k/scale)]
+    ##########################
+    displayImage()
+
+def rotate():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    degree = askinteger('각도 입력', '0 < 입력', minvalue=0)
+    radian = math.radians(degree)
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    outImage = malloc2D(outH, outW)
+
+    cx = inH / 2
+    cy = inW / 2
+
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(outH):
+        for k in range(outW):
+            xd = i
+            yd = k
+
+            xs = int((math.cos(radian) * (xd - cx) + math.sin(radian) * (yd - cy)) + cx)
+            ys = int((-math.sin(radian) * (xd - cx) + math.cos(radian) * (yd - cy)) + cy)
+
+            if ((0 <= xs and xs < outH) and (0 <= ys and ys < outW)):
+                outImage[xd][yd] = inImage[xs][ys]
+    ##########################
+    displayImage()
+
+def zoomrotate():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    degree = askinteger('각도 입력', '0 < 입력', minvalue=0)
+    radian = -abs(math.radians(degree))
+    radian90 = math.radians(90)
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = int(abs((inW*math.cos(radian90 + radian))+ abs((inH *(math.cos(radian))))))
+    outW = int(abs((inH*math.cos(radian90 + radian)) +abs((inW *(math.cos(radian))))))
+    outImage = malloc2D(outH, outW)
+
+    cx = inH / 2
+    cy = inW / 2
+
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(outH):
+        for k in range(outW):
+            xd = i
+            yd = k
+
+            xs = int((math.cos(radian) * (xd - outH/2) + math.sin(radian) * (yd - outW/2)) + inH/2)
+            ys = int((-math.sin(radian) * (xd - outH/2) + math.cos(radian) * (yd - outW/2)) + inW/2)
+
+            if ((0 <= xs and xs < inH) and (0 <= ys and ys < inW)):
+                outImage[xd][yd] = inImage[xs][ys]
+    ##########################
+    displayImage()
+
+def moveImage():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    xmove = scale = askinteger('이동값입력', 'X입력')
+    ymove = scale = askinteger('이동값입력', 'Y입력')
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(inH):
+        for k in range(inW):
+            if ((0 <= i - xmove and i - xmove < outH) and (0 <= k - ymove and k - ymove < outW)):
+                outImage[i][k] = inImage[i - xmove][k - ymove];
+    ##########################
+    displayImage()
+
+def mirrorRL():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(inH):
+        for k in range(inW):
+            outImage[i][k] = inImage[i][(inW - 1) - k]
+    ##########################
+    displayImage()
+
+def mirrorUD():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    for i in range(inH):
+        for k in range(inW):
+            outImage[i][k] = inImage[(inH - 1) - i][k]
+    ##########################
+    displayImage()
+
+def endIn():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    high = inImage[0][0]
+    low = inImage[0][0]
+    for i in range(inH):
+        for k in range(inW):
+            if(inImage[i][k] < low):
+                low = inImage[i][k]
+            if(inImage[i][k] > high):
+                high = inImage[i][k]
+    high -= 50
+    low += 50
+    for i in range(inH):
+        for k in range(inW):
+            old = inImage[i][k]
+            new = int((old-low)/(high-low)*255.0)
+
+            if(new > 255):
+                new = 255
+            if(new < 0):
+                new = 0
+            outImage[i][k] = new
+    ##########################
+    displayImage()
+
+def histoEqual():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    ##1단계: 빈도수세기( = 히스토그램) histo[256]
+    histo = [0 for _ in range(256)]
+    for i in range(inH):
+        for k in range(inW):
+            histo[inImage[i][k]] += 1
+    ##2단계 : 누적 히스토그렘 생성
+    sumHisto = [0 for _ in range(256)]
+    for i in range(1,256):
+        sumHisto[i] = sumHisto[i-1] + histo[i]
+    ##3단계: 정규화된 히스토그램 생성
+    normalHisto = [0 for _ in range(256)]
+    for i in range(256):
+        normalHisto[i] = sumHisto[i] * (1.0 /(inH*inW))*255.0
+    ##4단계 : inImage를 정규화된 이미지로 치환
+    for i in range(inH):
+        for k in range(inW):
+            outImage[i][k] =int(normalHisto[inImage[i][k]])
+    ###########
+    displayImage()
+
+def histoStretch():
+    global window, canvas, paper, fullname
+    global inImage, outImage, inH, inW, outH, outW
+    # 중요! 출력 영상 크기 결정 --> 알고리즘에 의존
+    outH = inH
+    outW = inW
+    # 메모리 할장
+    outImage = malloc2D(outH, outW)
+    ### 진짜 영상처리 알고리즘 ###
+    high = inImage[0][0]
+    low = inImage[0][0]
+    for i in range(inH):
+        for k in range(inW):
+            if (inImage[i][k] < low):
+                low = inImage[i][k]
+            if (inImage[i][k] > high):
+                high = inImage[i][k]
+    for i in range(inH):
+        for k in range(inW):
+            old = inImage[i][k]
+            new = int((old-low)/(high-low)*255.0)
+
+            if(new > 255):
+                new = 255
+            if(new < 0):
+                new = 0
+            outImage[i][k] = new
+    ##########################
+    displayImage()
+
 ### 전역 변수부
 window, canvas, paper = None, None, None
 inImage, outImage, maskcircle = [], [], []
@@ -587,11 +905,25 @@ pixelAreaMenu.add_command(label='샤프닝', command=sharppning)
 pixelAreaMenu.add_command(label='고주파 필터 샤프닝', command=hfsharppning)
 pixelAreaMenu.add_command(label='수평엣지 검출', command=edgeHor)
 pixelAreaMenu.add_command(label='수직엣지 검출', command=edgeVer)
+pixelAreaMenu.add_command(label='유사 연산자 처리', command=simImage)
+pixelAreaMenu.add_command(label='차 연산자 처리', command=minusImage)
 
 
+pixelmoveMenu = Menu(mainMenu, tearoff=0)  # 상위 메뉴 (화소점 처리)
+mainMenu.add_cascade(label='기하학 처리', menu=pixelmoveMenu)
+pixelmoveMenu.add_command(label='ZOOMOUT', command=zoomOut)
+pixelmoveMenu.add_command(label='ZOOMIN', command=zoomIn)
+pixelmoveMenu.add_command(label='회전', command=rotate)
+pixelmoveMenu.add_command(label='확대회전', command=zoomrotate)
+pixelmoveMenu.add_command(label='이동', command=moveImage)
+pixelmoveMenu.add_command(label='좌우 미러링', command=mirrorRL)
+pixelmoveMenu.add_command(label='상하 미러링', command=mirrorUD)
 
-
-
+pixelhistoMenu = Menu(mainMenu, tearoff=0)  # 상위 메뉴 (화소점 처리)
+mainMenu.add_cascade(label='히스토그램 처리', menu=pixelhistoMenu)
+pixelhistoMenu.add_command(label='앤드인', command=endIn)
+pixelhistoMenu.add_command(label='평활화', command=histoEqual)
+pixelhistoMenu.add_command(label='스트레칭', command=histoStretch)
 
 
 

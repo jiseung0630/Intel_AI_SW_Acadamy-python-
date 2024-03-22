@@ -259,7 +259,6 @@ def emboss():
     for i in range(inH):
         for k in range(inW): ##마스크(3x3) 와 한점을 중심으로한 3x3을 곱하기
             S = 0.0; ##마스크 9개와 입력값 9개를 각각 곱해서 합한 값.
-
             for m in range (3):
                 for n in range (3):
                     S += tmpInImage[i + m][k + n] * mask[m][n]
@@ -614,7 +613,6 @@ def minusImage():
     for i in range(inH):
         for k in range(inW):  ##마스크(3x3) 와 한점을 중심으로한 3x3을 곱하기
             max = 0.0
-
             mask4[0]=abs(tmpInImage[i][k] - tmpInImage[i + 2][k + 2])
             mask4[1]=abs(tmpInImage[i][k + 1] - tmpInImage[i + 2][k + 1])
             mask4[2]=abs(tmpInImage[i][k + 2] - tmpInImage[i + 2][k])
